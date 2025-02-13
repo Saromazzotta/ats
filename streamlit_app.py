@@ -13,3 +13,5 @@ API_KEY = os.getenv("MY_API_KEY")
     5. Create Prompts Template[Multiple Prompts]
 '''
 
+# Create a field for job description
+job_description = st.text_area("Paste Job Description:", height=200)
