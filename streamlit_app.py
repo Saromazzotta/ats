@@ -40,10 +40,13 @@ def main():
     # Upload PDF
     uploaded_file = st.file_uploader(label="Choose a file", type="pdf")
 
-    images = convert_pdf_to_image(uploaded_file)
+    # Convert file to image using function
+    if uploaded_file: 
+        images = convert_pdf_to_image(uploaded_file)
 
-    if images:
-        st.image(images, caption="Images")
+
+        if images:
+            st.image(images, caption="Images")
 
 
 
