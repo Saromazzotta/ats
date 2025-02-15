@@ -29,10 +29,14 @@ uploaded_file = st.file_uploader(label="Choose a file", type="pdf")
 
 def file_checker(uploaded_file):
     if uploaded_file is not None:
+        st.success(f"File uploaded: {uploaded_file.name}")
         # To read file as bytes:
-        bytes_data = uploaded_file.getvalue()
-        st.write(bytes_data)
-        return "File uploaded successfully."
-    return "Please upload a file."
+    else:
+        st.warning("Please upload a file.")
+
 
 # Turn PDF to image
+
+def convert_pdf_to_image(uploaded_file):
+    bytes_data = uploaded_file.getvalue()
+    st.write(bytes_data)
