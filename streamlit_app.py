@@ -84,10 +84,23 @@ def main():
         elif not extracted_text: 
             st.error("Please upload a resume before proceeding.")
         else:
-            print("✅ Both Job Description and Extracted Text are available.")
             st.info("Processing with Gemini Pro...")
             result = send_to_gemini(job_description, extracted_text)
-            st.text_area("Gemini's Analysis: ", result, height=1000)
+
+            # Display the full analysis
+            st.subheader("Gemini's Analysis:")
+            st.write(result) # General explanation
+
+            # Extract missing keywords dynamically (if formatted properly)
+            missing_keywords = []
+            for line in result.split("\n"):
+                if "Missing:" in line:
+                    missing_keywords.extend(line.replace("Missing:", "").split(","))
+
+            if missing_keywords:
+                st.subheader("🔎 Missing Keywords:")
+                st.markdown("\n".join(f"- {kw.strip()}" for kw in missing_keywords))
+            #st.text_area("Gemini's Analysis: ", result, height=1000)
 
 
 # Runs the app
