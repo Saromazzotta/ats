@@ -41,7 +41,7 @@ def send_to_gemini(job_description, extracted_text):
         """
 
     try:
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, generation_config={"temperature": 0})
         print(f"Raw API Response: {response}")
 
         if hasattr(response, 'text'):
@@ -79,12 +79,13 @@ def main():
 
     # Send to gemini
     if st.button("Compare with Gemini"):
+        st.divider()
         if not job_description:
             st.error("Please paste a job description")
         elif not extracted_text: 
             st.error("Please upload a resume before proceeding.")
         else:
-            st.info("Processing with Gemini Pro...")
+            st.info("Processing with Gemini...")
             result = send_to_gemini(job_description, extracted_text)
 
             # Display the full analysis
