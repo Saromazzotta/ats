@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import os
 import io
 import streamlit as st
+import pytesseract
 from PIL import Image
 import pdf2image
 import google.generativeai as genai
@@ -47,6 +48,12 @@ def main():
 
         if images:
             st.image(images, caption="Images")
+            # Use Pytesseract to convert image to string
+            text = pytesseract.image_to_string(images[0])
+            st.text_area("Text", text, height=1750) # Displays it to streamlit frontend
+            print(text) # Prints to console for debugging
+        else:
+            st.error("Failed to extract text.")
 
 
 
