@@ -29,15 +29,33 @@ def send_to_gemini(job_description, extracted_text):
 
     model = genai.GenerativeModel(model_name='gemini-1.5-flash')
     prompt = f"""
-        Give a match percentage (0-100%) and explain the reasoning behind it.
-        Compare the resume with the job description. Identify strengths and weaknessess.
-        List missing skills, certifications, or experiences that the job requires but the resume lacks.
+        Act as a hiring AI that evaluates resumes against job descriptions.
 
-        **Job Description:**
+        **Instructions:** 
+        - Compare the resume with the job description.
+            - Identify **strengths** and **weaknesses** in skills, experience, and certifications.
+            - List **missing keywords** (skills, tools, certifications) required for the job.
+            - Provide a **match percentage** (0-100%) based on relevance. 
+            - Keep answers **concise and structured**.
+
+        **Job Description:**  
         {job_description}
 
-        **Resume:**
+        **Resume:**  
         {extracted_text}
+
+        **Output Format:**  
+        **Match Percentage:** XX%  
+        **Strengths:**  
+            - Skill 1  
+            - Skill 2  
+        **Weaknesses:**  
+            - Area 1  
+            - Area 2  
+        **Missing Keywords:**  
+            - Keyword 1  
+            - Keyword 2  
+        **Reasoning:** (Brief explanation)
         """
 
     try:
@@ -78,15 +96,20 @@ def main():
 
 
     # Send to gemini
+
     if st.button("Compare with Gemini"):
+        status_placeholder = st.empty() # Creates empty place holder 
         st.divider()
+
         if not job_description:
             st.error("Please paste a job description")
         elif not extracted_text: 
             st.error("Please upload a resume before proceeding.")
         else:
-            st.info("Processing with Gemini...")
+            status_placeholder.info("Processing with Gemini...")
             result = send_to_gemini(job_description, extracted_text)
+
+            status_placeholder.success("✅ Analysis Complete!")
 
             # Display the full analysis
             st.subheader("Gemini's Analysis:")
@@ -95,13 +118,16 @@ def main():
             # Extract missing keywords dynamically (if formatted properly)
             missing_keywords = []
             for line in result.split("\n"):
-                if "Missing:" in line:
-                    missing_keywords.extend(line.replace("Missing:", "").split(","))
+                if "Missing Keywords:" in line:
+                    missing_keywords.extend(line.replace("Missing Keywords:", "").split(","))
 
             if missing_keywords:
                 st.subheader("🔎 Missing Keywords:")
-                st.markdown("\n".join(f"- {kw.strip()}" for kw in missing_keywords))
-            #st.text_area("Gemini's Analysis: ", result, height=1000)
+
+                with st.expander("Click to view issing keywords"):
+                    for keyword in missing_keywords:
+                        st.checkbox(keyword.strip(), key=f"kw_{keyword.strip()}")
+
 
 
 # Runs the app
