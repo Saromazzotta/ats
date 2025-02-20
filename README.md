@@ -20,6 +20,10 @@ A Streamlit-powered tool that compares a resume against a job description using 
 - pdf2image (Convert PDFs to images)
 
 ## Installation
+### Prerequisites
+- Python 3.3.2+ installed (Check with `python --version`)
+- (Optional) Virtual environment tool like `venv` (Should come installed with Python 3.3.2 or higher)
+### Steps
 1. Clone the repository: <br/>
   ```bash
   https://github.com/Saromazzotta/ats.git
