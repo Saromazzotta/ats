@@ -31,32 +31,22 @@ def send_to_gemini(job_description, extracted_text):
     prompt = f"""
         Act as a hiring AI that evaluates resumes against job descriptions.
 
-        **Instructions:** 
-        - Compare the resume with the job description.
-            - Identify **strengths** and **weaknesses** in skills, experience, and certifications.
-            - List **missing keywords** (skills, tools, certifications) required for the job.
-            - Provide a **match percentage** (0-100%) based on relevance. 
-            - Keep answers **concise and structured**.
+        **Instructions:**  
+        - Compare the resume with the job description.  
+        - Use the following criteria to calculate a **match percentage** (0-100%):  
+            - 50%: Core required skills and experience.  
+            - 30%: Additional relevant skills and certifications.  
+            - 20%: Industry-specific keywords and preferred qualifications.  
+        - Identify **strengths** and **weaknesses** based on these categories.  
+        - List **missing keywords** (skills, tools, certifications) required for the job.  
+        - Keep answers **concise and structured**.
 
-        **Job Description:**  
-        {job_description}
+**Job Description:**  
+{job_description}
 
-        **Resume:**  
-        {extracted_text}
-
-        **Output Format:**  
-        **Match Percentage:** XX%  
-        **Strengths:**  
-            - Skill 1  
-            - Skill 2  
-        **Weaknesses:**  
-            - Area 1  
-            - Area 2  
-        **Missing Keywords:**  
-            - Keyword 1  
-            - Keyword 2  
-        **Reasoning:** (Brief explanation)
-        """
+**Resume:**  
+{extracted_text}
+"""
 
     try:
         response = model.generate_content(prompt, generation_config={"temperature": 0})
