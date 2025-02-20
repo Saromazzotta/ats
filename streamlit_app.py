@@ -115,20 +115,6 @@ def main():
             st.subheader("Gemini's Analysis:")
             st.write(result) # General explanation
 
-            # Extract missing keywords dynamically (if formatted properly)
-            missing_keywords = []
-            for line in result.split("\n"):
-                if "Missing Keywords:" in line:
-                    missing_keywords.extend(line.replace("Missing Keywords:", "").split(","))
-
-            if missing_keywords:
-                st.subheader("🔎 Missing Keywords:")
-
-                with st.expander("Click to view issing keywords"):
-                    for keyword in missing_keywords:
-                        st.checkbox(keyword.strip(), key=f"kw_{keyword.strip()}")
-
-
 
 # Runs the app
 if __name__ == "__main__":
