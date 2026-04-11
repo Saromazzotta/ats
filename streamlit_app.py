@@ -1,3 +1,4 @@
+import datetime
 from dotenv import load_dotenv
 import os
 import io
@@ -28,23 +29,39 @@ def send_to_gemini(job_description, extracted_text):
     # Sends job description and resume to Gemini for comparison
 
     model = genai.GenerativeModel(model_name='gemini-2.5-flash')
+
+    today = datetime.now().strftime("%B %d, %Y")
+
     prompt = f"""
-        Act as a hiring AI that evaluates resumes against job descriptions.
+Act as a hiring AI that evaluates resumes against job descriptions.
 
-        **Instructions:**  
-        - Compare the resume with the job description.  
-        - Use the following criteria to calculate a **match percentage** (0-100%):  
-            - 50%: Core required skills and experience.  
-            - 30%: Additional relevant skills and certifications.  
-            - 20%: Industry-specific keywords and preferred qualifications.  
-        - Identify **strengths** and **weaknesses** based on these categories.  
-        - List **missing keywords** (skills, tools, certifications) required for the job.  
-        - Keep answers **concise and structured**.
+**Today's Date:** {today}
+Use this date to accurately calculate employment durations and determine whether dates on the resume are in the past or future. Do not flag past dates as errors.
 
-**Job Description:**  
+**Instructions:**
+- Compare the resume with the job description.
+- Use the following criteria to calculate a **match percentage** (0-100%):
+    - 50%: Core required skills and experience match. Differentiate between "required" and "preferred" qualifications — missing a preferred skill should penalize less than missing a required one.
+    - 30%: Additional relevant skills, certifications, and transferable experience. Consider whether the candidate's existing certifications cover or exceed what is asked for (e.g., Security+ satisfies DoD 8570 IAT Level II; AZ-900 is foundational toward AZ-104).
+    - 20%: Industry-specific keywords and preferred qualifications.
+
+**Scoring Guidelines:**
+- If a job lists a skill as "preferred" or "nice to have," do NOT treat it as a hard gap. Reduce its weight in the match calculation.
+- If the candidate holds a higher-level certification that encompasses a lower one (e.g., Security+ covers A+ security concepts), give partial or full credit.
+- Evaluate transferable experience fairly. For example, customer-facing technical troubleshooting at Apple Genius Bar translates to help desk support skills.
+- When calculating years of experience, use today's date minus employment start dates. Do not penalize for dates that are in the past relative to today.
+
+**Output Format:**
+1. **Match Percentage:** X%
+2. **Strengths:** Bullet list organized by the three scoring categories.
+3. **Weaknesses:** Bullet list organized by the three scoring categories. Clearly label each weakness as impacting a "required" vs "preferred" qualification.
+4. **Missing Keywords:** List missing skills, tools, and certifications. Mark each as (Required) or (Preferred).
+5. **Recommendations:** 2-3 specific, actionable suggestions for how the candidate could improve their match (e.g., add a keyword to the resume, get a certification, reframe experience).
+
+**Job Description:**
 {job_description}
 
-**Resume:**  
+**Resume:**
 {extracted_text}
 """
 
@@ -69,8 +86,8 @@ def main():
     uploaded_file = st.file_uploader(label="Choose a file", type="pdf") # Uploads PDF
 
     # Process PDF using convert function and extracts images
-    if "extracted_text":
-        extracted_text = None # Creates variable inside of main() scope to be used later
+    
+    extracted_text = None # Creates variable inside of main() scope to be used later
 
     if uploaded_file: 
         images = convert_pdf_to_image(uploaded_file)
