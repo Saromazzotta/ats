@@ -11,6 +11,8 @@ import google.generativeai as genai
 load_dotenv() # Loads environment variables
 
 genai.configure(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
+
+
 # Turn PDF to image
 def convert_pdf_to_image(uploaded_file):
     if uploaded_file is None:
@@ -120,7 +122,7 @@ def main():
 
             # Display the full analysis
             st.subheader("Gemini's Analysis:")
-            st.write(result) # General explanation
+            st.markdown(result) # General explanation
 
 
 # Runs the app
