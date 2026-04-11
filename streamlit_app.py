@@ -27,7 +27,7 @@ def convert_pdf_to_image(uploaded_file):
 def send_to_gemini(job_description, extracted_text):
     # Sends job description and resume to Gemini for comparison
 
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    model = genai.GenerativeModel(model_name='gemini-2.5-flash')
     prompt = f"""
         Act as a hiring AI that evaluates resumes against job descriptions.
 
@@ -76,9 +76,9 @@ def main():
         images = convert_pdf_to_image(uploaded_file)
 
         if images:
-            st.image(images, caption="Images")
+            st.image(images, caption=[f"Page {i+1}" for i in range(len(images))])
             # Use Pytesseract to convert image to string
-            extracted_text = pytesseract.image_to_string(images[0])
+            extracted_text = "\n".join(pytesseract.image_to_string(img) for img in images)
             print(f"---------EXTRACTED TEXT----------\n{extracted_text}")
             # st.text_area("Resume", extracted_text, height=200) # Displays it to streamlit frontend
         else:
