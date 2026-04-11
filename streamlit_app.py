@@ -83,12 +83,14 @@ Use this date to accurately calculate employment durations and determine whether
         return f"API Error: {e}"
 
 def main():
+    st.title("Resume Job Match Analyzer")
+
     #Input Fields
     job_description = st.text_area("Paste Job Description:", height=200) # Creates job description text area
     uploaded_file = st.file_uploader(label="Choose a file", type="pdf") # Uploads PDF
 
     # Process PDF using convert function and extracts images
-    
+    # Initialize extracted text
     extracted_text = None # Creates variable inside of main() scope to be used later
 
     if uploaded_file: 
