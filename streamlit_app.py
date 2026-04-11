@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 import io
@@ -38,7 +38,7 @@ def send_to_gemini(job_description, extracted_text):
 Act as a hiring AI that evaluates resumes against job descriptions.
 
 **Today's Date:** {today}
-Use this date to accurately calculate employment durations and determine whether dates on the resume are in the past or future. Do not flag past dates as errors.
+CRITICAL: August 2025 is IN THE PAST relative to today. Any employment date before {today} is a past date and represents real experience. Calculate all durations by subtracting the start date from today's date. Do NOT flag any date before {today} as a future date or as an error.
 
 **Instructions:**
 - Compare the resume with the job description.
