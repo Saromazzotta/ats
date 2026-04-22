@@ -12,9 +12,7 @@ load_dotenv() # Loads environment variables
 
 genai.configure(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
 
-
-
-
+# Extracts pdf content and uses caching to reduce api load
 @st.cache_data(show_spinner="Converting PDF and extracting text...")
 def extract_pdf_content(file_bytes: bytes):
     """Convert PDF bytes to images and OCR text. Cached so repeated Streamlit reruns don't re-process the same file."""
@@ -22,19 +20,20 @@ def extract_pdf_content(file_bytes: bytes):
     text = "\n".join(pytesseract.image_to_string(img) for img in images)
     return images, text
 
-
-def send_to_gemini(job_description, extracted_text):
+@st.cache_data(show_spinner=False)
+def send_to_gemini(job_description: str, extracted_text: str) -> str:
     # Sends job description and resume to Gemini for comparison
 
     model = genai.GenerativeModel(model_name='gemini-2.5-flash')
-
     today = datetime.now().strftime("%B %d, %Y")
 
     prompt = f"""
 Act as a hiring AI that evaluates resumes against job descriptions.
 
 **Today's Date:** {today}
-CRITICAL: August 2025 is IN THE PAST relative to today. Any employment date before {today} is a past date and represents real experience. Calculate all durations by subtracting the start date from today's date. Do NOT flag any date before {today} as a future date or as an error.
+CRITICAL: Any employment date before {today} is a past date and represents real
+experience. Calculate all durations by subtracting the start date from today's
+date. Do NOT flag any date before {today} as a future date or as an error.
 
 **Instructions:**
 - Compare the resume with the job description.
@@ -64,19 +63,28 @@ CRITICAL: August 2025 is IN THE PAST relative to today. Any employment date befo
 """
 
     try:
-        response = model.generate_content(prompt, generation_config={"temperature": 0})
+        response = model.generate_content(
+            prompt, 
+            generation_config={"temperature": 0})
         print(f"Raw API Response: {response}")
 
-        if hasattr(response, 'text'):
+        if hasattr(response, 'text') and response.text:
             print(f"Gemini Response: {response.text}")
             return response.text
-        else:
-            print("No text found in response.")
-            return "Error: No text found in resposne."
+        return "Error: No text found in response."
         
+    except google_exceptions.ResourceExhausted:
+        return (
+            "⚠️ **Rate limit hit.** The free tier allows 5 requests/minute for "
+            "`gemini-2.5-flash`. Wait ~60 seconds and try again, or switch to "
+            "`gemini-2.5-flash-lite` for higher limits."
+        )
     except Exception as e:
         print(f"Error occured: {e}")
         return f"API Error: {e}"
+    
+
+## -------------------------------------------------------------------------------------------------
 
 def main():
     st.title("Resume Job Match Analyzer")
