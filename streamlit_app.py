@@ -6,12 +6,14 @@ import streamlit as st
 import pytesseract
 from PIL import Image
 import pdf2image
-import google.generativeai as genai
+import google as genai
 from google.api_core import exceptions as google_exceptions
 
 load_dotenv() # Loads environment variables
 
-genai.configure(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
+client = genai.Client(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
+
+
 
 # Extracts pdf content and uses caching to reduce api load
 @st.cache_data(show_spinner="Converting PDF and extracting text...")
@@ -63,9 +65,11 @@ date. Do NOT flag any date before {today} as a future date or as an error.
 {extracted_text}
 """
 
-    response = model.generate_content(
-        prompt, 
-        generation_config={"temperature": 0})
+    response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=prompt,
+    config={"temperature": 0},
+    )
     print(f"Raw API Response: {response}")
 
     if hasattr(response, 'text') and response.text:
