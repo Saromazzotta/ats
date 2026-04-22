@@ -90,6 +90,9 @@ date. Do NOT flag any date before {today} as a future date or as an error.
 def main():
     st.title("Resume Job Match Analyzer")
 
+    if "running" not in st.session_state:
+        st.session_state.running = False
+
     #Input Fields
     job_description = st.text_area("Paste Job Description:", height=200) # Creates job description text area
     uploaded_file = st.file_uploader(label="Choose a file", type="pdf") # Uploads PDF
