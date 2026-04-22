@@ -5,6 +5,7 @@ import streamlit as st
 import pytesseract
 import pdf2image
 from google import genai
+import time
 from google.api_core import exceptions as google_exceptions
 
 load_dotenv() # Loads environment variables
@@ -20,6 +21,24 @@ def extract_pdf_content(file_bytes: bytes):
     images = pdf2image.convert_from_bytes(file_bytes)
     text = "\n".join(pytesseract.image_to_string(img) for img in images)
     return images, text
+
+
+
+def _call_with_retry(prompt: str, max_retries: int = 3):
+    """Helper function to call the Gemini API with retries on ServiceUnavailable errors."""
+    for attempt in range(max_retries):
+        try:
+            return client.models.generate_content(
+                model="gemini-2.5-flash-lite",
+                contents=prompt,
+                config={"temperature": 0},
+            )
+        except google_exceptions.ServiceUnavailable:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)  # Exponential backoff
+
+
 
 @st.cache_data(show_spinner=False)
 def send_to_gemini(job_description: str, extracted_text: str) -> str:
@@ -62,16 +81,11 @@ date. Do NOT flag any date before {today} as a future date or as an error.
 {extracted_text}
 """
 
-    response = client.models.generate_content(
-    model="gemini-2.5-flash-lite",
-    contents=prompt,
-    config={"temperature": 0},
-    )
+    response = _call_with_retry(prompt)
 
-    if hasattr(response, 'text') and response.text:
+    if response.text:
         return response.text
-    raise RuntimeError("No text found in Gemini response")
-        
+    raise RuntimeError("No text found in Gemini response.")
     
     
 
