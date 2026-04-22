@@ -102,37 +102,39 @@ def main():
     extracted_text = None # Creates variable inside of main() scope to be used later
 
     if uploaded_file: 
-        images = convert_pdf_to_image(uploaded_file)
+        try:
+            images, extracted_text = extract_pdf_content(uploaded_file.getvalue())
+    
+            st.image(
+                images,
+                caption=[f"Page {i+1}" for i in range(len(images))],
+            )
+        except Exception as e:
+            st.error(f"failed to process PDF: {e}")
+        
 
-        if images:
-            st.image(images, caption=[f"Page {i+1}" for i in range(len(images))])
-            # Use Pytesseract to convert image to string
-            extracted_text = "\n".join(pytesseract.image_to_string(img) for img in images)
-            print(f"---------EXTRACTED TEXT----------\n{extracted_text}")
-            # st.text_area("Resume", extracted_text, height=200) # Displays it to streamlit frontend
-        else:
-            st.error("Failed to extract text.")
+        # Disable the button while a request is happening to prevent double clicks
+        compare_clicked = st.button(
+            "Compare with Gemini",
+            disabled=st.session_state.running,
+        )
 
-
-    # Send to gemini
-
-    if st.button("Compare with Gemini"):
-        status_placeholder = st.empty() # Creates empty place holder 
-        st.divider()
-
-        if not job_description:
-            st.error("Please paste a job description")
-        elif not extracted_text: 
-            st.error("Please upload a resume before proceeding.")
-        else:
-            status_placeholder.info("Processing with Gemini...")
-            result = send_to_gemini(job_description, extracted_text)
-
-            status_placeholder.success("✅ Analysis Complete!")
-
-            # Display the full analysis
-            st.subheader("Gemini's Analysis:")
-            st.markdown(result) # General explanation
+        if compare_clicked:
+            if not job_description:
+                st.error("Please paste a job description.")
+            elif not extracted_text:
+                st.error("Please upload a resume before proceeding.")
+            else:
+                st.session_state.running = True
+                st.divider()
+                try:
+                    with st.spinner("Processing with Gemini..."):
+                        result = send_to_gemini(job_description, extracted_text)
+                    st.success("✅ Analysis Complete!")
+                    st.subheader("Gemini's Analysis:")
+                    st.markdown(result)
+                finally:
+                    st.session_state.running = False
 
 
 # Runs the app
