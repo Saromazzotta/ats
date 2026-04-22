@@ -1,12 +1,14 @@
 from datetime import datetime
-from dotenv import load_dotenv
 import os
-import streamlit as st
-import pytesseract
-import pdf2image
-from google import genai
 import time
+
+
+from dotenv import load_dotenv
+from google import genai
 from google.api_core import exceptions as google_exceptions
+import pdf2image
+import pytesseract
+import streamlit as st
 
 load_dotenv() # Loads environment variables
 
