@@ -63,26 +63,18 @@ date. Do NOT flag any date before {today} as a future date or as an error.
 {extracted_text}
 """
 
-    try:
-        response = model.generate_content(
-            prompt, 
-            generation_config={"temperature": 0})
-        print(f"Raw API Response: {response}")
+    response = model.generate_content(
+        prompt, 
+        generation_config={"temperature": 0})
+    print(f"Raw API Response: {response}")
 
-        if hasattr(response, 'text') and response.text:
-            print(f"Gemini Response: {response.text}")
-            return response.text
-        return "Error: No text found in response."
+    if hasattr(response, 'text') and response.text:
+        print(f"Gemini Response: {response.text}")
+        return response.text
+    else:
+        raise RuntimeError("No text found in Gemini response")
         
-    except google_exceptions.ResourceExhausted:
-        return (
-            "⚠️ **Rate limit hit.** The free tier allows 5 requests/minute for "
-            "`gemini-2.5-flash`. Wait ~60 seconds and try again, or switch to "
-            "`gemini-2.5-flash-lite` for higher limits."
-        )
-    except Exception as e:
-        print(f"Error occured: {e}")
-        return f"API Error: {e}"
+    
     
 
 ## -------------------------------------------------------------------------------------------------
@@ -127,14 +119,17 @@ def main():
             else:
                 st.session_state.running = True
                 st.divider()
-                try:
-                    with st.spinner("Processing with Gemini..."):
-                        result = send_to_gemini(job_description, extracted_text)
-                    st.success("✅ Analysis Complete!")
-                    st.subheader("Gemini's Analysis:")
-                    st.markdown(result)
-                finally:
-                    st.session_state.running = False
+    try:
+        with st.spinner("Processing with Gemini..."):
+            result = send_to_gemini(job_description, extracted_text)
+        st.success("✅ Analysis Complete!")
+        st.subheader("Gemini's Analysis:")
+        st.markdown(result)
+    except google_exceptions.ResourceExhausted:
+        st.error(
+            "Rate limit hit. Wait ~60 seconds and try again, or switch to gemini-2.5-flash-lite.")
+    finally:
+        st.session_state.running = False
 
 
 # Runs the app
