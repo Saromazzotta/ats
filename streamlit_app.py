@@ -137,9 +137,13 @@ def main():
                     st.success("✅ Analysis Complete!")
                     st.subheader("Gemini's Analysis:")
                     st.markdown(result)
+                except google_exceptions.ServiceUnavailable:
+                    st.error("Gemini is temporarily overloaded. This is on Google's end. Please wait a minute and try again.")
                 except google_exceptions.ResourceExhausted:
                     st.error(
-                        "Rate limit hit. Wait ~60 seconds and try again, or switch to gemini-2.5-flash-lite.")
+                        "Rate limit hit. The free tier has daily and per-minute caps. "
+                        "Wait ~60 seconds and try again, or check your quota at "
+                        "https://aistudio.google.com/apikey.")
                 except Exception as e:
                     st.error(f"API error: {e}")
                 finally:
