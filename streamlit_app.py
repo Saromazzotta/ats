@@ -7,6 +7,7 @@ import pytesseract
 from PIL import Image
 import pdf2image
 import google.generativeai as genai
+from google.api_core import exceptions as google_exceptions
 
 load_dotenv() # Loads environment variables
 
