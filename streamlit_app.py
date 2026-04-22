@@ -13,19 +13,15 @@ load_dotenv() # Loads environment variables
 genai.configure(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
 
 
-# Turn PDF to image
-def convert_pdf_to_image(uploaded_file):
-    if uploaded_file is None:
-        st.warning("Please upload a file.")
-        return None 
-    try:
-        bytes_data = uploaded_file.getvalue() # Gets this file's binary data
-        images = pdf2image.convert_from_bytes(bytes_data) # Converts PDF to images
-        return images # Return the list of images
 
-    except Exception as e:
-        st.error(f"An error occured while converting the PDF: {e}")
-        return None # Ensure the function always returns something
+
+@st.cache_data(show_spinner="Converting PDF and extracting text...")
+def extract_pdf_content(file_bytes: bytes):
+    """Convert PDF bytes to images and OCR text. Cached so repeated Streamlit reruns don't re-process the same file."""
+    images = pdf2image.convert_from_bytes(file_bytes)
+    text = "\n".join(pytesseract.image_to_string(img) for img in images)
+    return images, text
+
 
 def send_to_gemini(job_description, extracted_text):
     # Sends job description and resume to Gemini for comparison
