@@ -10,10 +10,11 @@ import pdf2image
 import pytesseract
 import streamlit as st
 
+from prompts import RESUME_ANALYSIS_SYSTEM
+
 load_dotenv() # Loads environment variables
 
 client = genai.Client(api_key=os.getenv("MY_API_KEY")) # Sets a global API key
-
 
 
 # Extracts pdf content and uses caching to reduce api load
@@ -33,7 +34,10 @@ def _call_with_retry(prompt: str, max_retries: int = 3):
             return client.models.generate_content(
                 model="gemini-2.5-flash-lite",
                 contents=prompt,
-                config={"temperature": 0},
+                config={
+                    "temperature": 0,
+                    "system_instruction": RESUME_ANALYSIS_SYSTEM,
+                    },
             )
         except google_exceptions.ServiceUnavailable:
             if attempt == max_retries - 1:
@@ -42,46 +46,17 @@ def _call_with_retry(prompt: str, max_retries: int = 3):
 
 
 
+
 @st.cache_data(show_spinner=False)
 def send_to_gemini(job_description: str, extracted_text: str) -> str:
-    # Sends job description and resume to Gemini for comparison
-
     today = datetime.now().strftime("%B %d, %Y")
+    prompt = f"""Today's date is {today}.
 
-    prompt = f"""
-Act as a hiring AI that evaluates resumes against job descriptions.
-
-**Today's Date:** {today}
-CRITICAL: Any employment date before {today} is a past date and represents real
-experience. Calculate all durations by subtracting the start date from today's
-date. Do NOT flag any date before {today} as a future date or as an error.
-
-**Instructions:**
-- Compare the resume with the job description.
-- Use the following criteria to calculate a **match percentage** (0-100%):
-    - 50%: Core required skills and experience match. Differentiate between "required" and "preferred" qualifications — missing a preferred skill should penalize less than missing a required one.
-    - 30%: Additional relevant skills, certifications, and transferable experience. Consider whether the candidate's existing certifications cover or exceed what is asked for (e.g., Security+ satisfies DoD 8570 IAT Level II; AZ-900 is foundational toward AZ-104).
-    - 20%: Industry-specific keywords and preferred qualifications.
-
-**Scoring Guidelines:**
-- If a job lists a skill as "preferred" or "nice to have," do NOT treat it as a hard gap. Reduce its weight in the match calculation.
-- If the candidate holds a higher-level certification that encompasses a lower one (e.g., Security+ covers A+ security concepts), give partial or full credit.
-- Evaluate transferable experience fairly. For example, customer-facing technical troubleshooting at Apple Genius Bar translates to help desk support skills.
-- When calculating years of experience, use today's date minus employment start dates. Do not penalize for dates that are in the past relative to today.
-
-**Output Format:**
-1. **Match Percentage:** X%
-2. **Strengths:** Bullet list organized by the three scoring categories.
-3. **Weaknesses:** Bullet list organized by the three scoring categories. Clearly label each weakness as impacting a "required" vs "preferred" qualification.
-4. **Missing Keywords:** List missing skills, tools, and certifications. Mark each as (Required) or (Preferred).
-5. **Recommendations:** 2-3 specific, actionable suggestions for how the candidate could improve their match (e.g., add a keyword to the resume, get a certification, reframe experience).
-
-**Job Description:**
+Job Description:
 {job_description}
 
-**Resume:**
-{extracted_text}
-"""
+Resume:
+{extracted_text}"""
 
     response = _call_with_retry(prompt)
 
