@@ -63,7 +63,7 @@ date. Do NOT flag any date before {today} as a future date or as an error.
 """
 
     response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     contents=prompt,
     config={"temperature": 0},
     )
