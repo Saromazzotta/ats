@@ -1,4 +1,7 @@
 # ATS Resume Evaluator
+
+I built this to help with my own job search, transitioning into IT
+
 A Streamlit-powered tool that compares a resume against a job description using Google's Gemini AI. The app extracts text from a PDF resume, evaluates its relevance to a job description, and returns a structured analysis including a match percentage, strengths, gaps, missing keywords, and tailoring recommendations to help optimize resumes for Applicant Tracking Systems (ATS).
 
 ![Screenshot](assets/screenshot_one.png)
